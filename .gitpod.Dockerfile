@@ -1,11 +1,11 @@
 FROM gitpod/workspace-full:latest
-RUN apt-get update && apt-get install -y python3.8
 USER gitpod
 
 # Install Redis.
 RUN sudo apt-get update \
     && sudo apt-get install -y \
     redis-server \
+    python3.8 \
     && sudo rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install \
