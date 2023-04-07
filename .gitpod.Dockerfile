@@ -5,8 +5,7 @@ USER gitpod
 RUN sudo apt-get update \
     && sudo apt-get install -y \
     redis-server \
-    python3.8 \
-    && sudo rm -rf /var/lib/apt/lists/*
+    python3.9 
 
 RUN pip3 install \
     celery==5.2.2 \
