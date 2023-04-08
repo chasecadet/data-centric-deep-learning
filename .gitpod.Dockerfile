@@ -1,11 +1,10 @@
-FROM gitpod/workspace-full:latest
+FROM gitpod/workspace-python-3.9:latest 
 USER gitpod
 
 # Install Redis.
 RUN sudo apt-get update \
     && sudo apt-get install -y \
-    redis-server \
-    python3.9 
+    redis-server 
 
 RUN pip3 install \
     celery==5.2.2 \
