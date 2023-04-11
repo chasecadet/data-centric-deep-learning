@@ -161,41 +161,6 @@ class TrainIdentifyReview(FlowSpec):
       probs = F.softmax(logits, dim=1)
       probs_np = probs.numpy()
       probs = probs_np.flatten()
-      # ===============================================
-      # FILL ME OUT
-      # 
-      # Fit a new `SentimentClassifierSystem` on the split of 
-      # `X` and `y` defined by the current `train_index` and
-      # `test_index`. Then, compute predicted probabilities on 
-      # the test set. Store these probabilities as a 1-D numpy
-      # array `probs_`.
-      # 
-      # Use `self.config.train.optimizer` to specify any hparams 
-      # like `batch_size` or `epochs`.
-      #  
-      # HINT: `X` and `y` are currently numpy objects. You will 
-      # need to convert them to torch tensors prior to training. 
-      # You may find the `TensorDataset` class useful. Remember 
-      # that `Trainer.fit` and `Trainer.predict` take `DataLoaders`
-      # as an input argument.
-      # 
-      # Our solution is ~15 lines of code.
-      # 
-      # Pseudocode:
-      # --
-      # Get train and test slices of X and y.
-      # Convert to torch tensors.
-      # Create train/test datasets using tensors.
-      # Create train/test data loaders from datasets.
-      # Create `SentimentClassifierSystem`.
-      # Create `Trainer` and call `fit`.
-      # Call `predict` on `Trainer` and the test data loader.
-      # Convert probabilities back to numpy (make sure 1D).
-      # 
-      # Types:
-      # --
-      # probs_: np.array[float] (shape: |test set|)
-      # ===============================================
       assert probs_ is not None, "`probs_` is not defined."
       probs[test_index] = probs_
 
