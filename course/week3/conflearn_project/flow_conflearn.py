@@ -124,12 +124,12 @@ class TrainIdentifyReview(FlowSpec):
       np.asarray(self.dm.dev_dataset.data.label),
       np.asarray(self.dm.test_dataset.data.label),
     ])
-
     probs = np.zeros(len(X))  # we will fill this in
-
     # https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.KFold.html
     kf = KFold(n_splits=3)    # create kfold splits
-
+    model = self.system
+    #  create a trainerstep 
+    trainer = self.trainer
     for train_index, test_index in kf.split(X):
       probs_ = None
       # Get train and test slices 
@@ -143,18 +143,24 @@ class TrainIdentifyReview(FlowSpec):
       # Create train/test datasets using tensors.
       train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
       test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
-      # Create DataLoader instances for training and testing sets
+      # Split up the datasets 
+      train_size = int(len(train_dataset) * 0.8)  # 80% of data for training
+      val_size = len(train_dataset) - train_size  # remaining 20% for validation
+      train_dataset, val_dataset = random_split(train_dataset, [train_size, val_size])
+      # Create DataLoader instances for training, validation, and testing sets 
       # Set batch size for your data loader
       batch_size = 32
       train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-      test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)    
+      test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+      val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
       # create SentimentClassifierSystem
-      model = self.system
-      #  def training_step(self, train_batch, batch_idx):
-      trainer = self.trainer
       result = trainer.fit(model, train_dataloader=train_dataloader, val_dataloaders=test_dataloader)
-
-      
+      # Call `predict` on `Trainer` and the test data loader.
+      logits = trainer.predict(test_dataloaders=test_dataloader)
+      # Convert probabilities back to numpy (make sure 1D).
+      probs = F.softmax(logits, dim=1)
+      probs_np = probs.numpy()
+      probs_ = probs_np.flatten()
       # ===============================================
       # FILL ME OUT
       # 
