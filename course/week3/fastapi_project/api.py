@@ -113,48 +113,12 @@ def predict(request: Request, body: InferenceInput):
 
   with torch.no_grad():
     logits = None
-
-    # ================================
-    # FILL ME OUT
-    # 
-    # Use `system` to make a prediction on the input `im` and
-    # save it to the variable `logits`. The output should be of
-    # shape `(1, 10)`.
-    # 
-    # HINT: there is no data module here. Which method should you use
-    # from system to make a prediction? 
-    # 
-    # Our solution is one of code. 
-    # 
-    # Pseudocode:
-    # --
-    # logits = ... (use system)
-    # 
-    # Types:
-    # --
-    # logits: torch.Tensor (shape: 1x10)
-    # ================================
-
+    logits = system.predict_step(im)
     # To extract the label, just find the largest logit.
     label = torch.argmax(logits, dim=1)  # shape (1)
     label = label.item()                 # tensor -> integer
-
     probs = None
-    # ================================
-    # FILL ME OUT
-    # 
-    # Normalize `logits` to probabilities and save it to the 
-    # variable `probs`. Remember `logits` is shape (1, 10), and 
-    # we expect your output `probs` to be shape (1, 10) as well.
-    # 
-    # Pseudocode:
-    # --
-    # probs = ...do something to logits...
-    # 
-    # Types:
-    # --
-    # probs: torch.Tensor (shape: 1x10)
-    # ================================
+    probs = F.softmax(logits, dim=1)
     probs = probs.squeeze(0)        # squeeze to (10) shape
     probs = probs.numpy().tolist()  # convert tensor to list
 
