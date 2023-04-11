@@ -79,7 +79,6 @@ class TrainIdentifyReview(FlowSpec):
     self.system = system
     self.trainer = trainer
     self.config = config
-
     self.next(self.train_test)
 
   @step
@@ -142,9 +141,20 @@ class TrainIdentifyReview(FlowSpec):
       X_train_tensor = torch.tensor(X_train) 
       y_train_tensor = torch.tensor(y_train)
       # Create train/test datasets using tensors.
-      test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
       train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
+      test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
+      # Create DataLoader instances for training and testing sets
+      # Set batch size for your data loader
+      batch_size = 32
+      train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+      test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)    
+      # create SentimentClassifierSystem
+      model = self.system
+      #  def training_step(self, train_batch, batch_idx):
+      trainer = self.trainer
+      result = trainer.fit(model, train_dataloader=train_dataloader, val_dataloaders=test_dataloader)
 
+      
       # ===============================================
       # FILL ME OUT
       # 
