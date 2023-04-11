@@ -154,13 +154,13 @@ class TrainIdentifyReview(FlowSpec):
       test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
       val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
       # create SentimentClassifierSystem
-      result = trainer.fit(model, train_dataloader=train_dataloader, val_dataloaders=test_dataloader)
+      result = trainer.fit(model, train_dataloader=train_dataloader, val_dataloaders=val_dataloader)
       # Call `predict` on `Trainer` and the test data loader.
       logits = trainer.predict(test_dataloaders=test_dataloader)
       # Convert probabilities back to numpy (make sure 1D).
       probs = F.softmax(logits, dim=1)
       probs_np = probs.numpy()
-      probs_ = probs_np.flatten()
+      probs = probs_np.flatten()
       # ===============================================
       # FILL ME OUT
       # 
