@@ -133,6 +133,18 @@ class TrainIdentifyReview(FlowSpec):
 
     for train_index, test_index in kf.split(X):
       probs_ = None
+      # Get train and test slices 
+      X_train, y_train = X[train_index], y[train_index]
+      X_test, y_test = X[test_index], y[test_index]
+      # Convert those bad boys to tensors 
+      X_test_tensor = torch.tensor(X_test)
+      y_test_tensor = torch.tensor(y_test)
+      X_train_tensor = torch.tensor(X_train) 
+      y_train_tensor = torch.tensor(y_train)
+      # Create train/test datasets using tensors.
+      test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
+      train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
+
       # ===============================================
       # FILL ME OUT
       # 
