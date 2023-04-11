@@ -183,34 +183,14 @@ class TrainIdentifyReview(FlowSpec):
   @step
   def inspect(self):
     r"""Use confidence learning over examples to identify labels that 
-    likely have issues with the `cleanlab` tool. 
-    """
+    likely have issues with the `cleanlab` tool. """
     prob = np.asarray(self.all_df.prob)
     prob = np.stack([1 - prob, prob]).T
-  
-    # rank label indices by issues
-    ranked_label_issues = None
-    
-    # =============================
-    # FILL ME OUT
-    # 
-    # Apply confidence learning to labels and out-of-sample
-    # predicted probabilities. 
-    # 
-    # HINT: use cleanlab. See tutorial. 
-    # 
-    # Our solution is one function call.
-    # 
-    # Types
-    # --
-    # ranked_label_issues: List[int]
-    # =============================
+    ranked_label_issues = find_label_issues(labels=all_df.label.values,pred_probs=prob,return_indices_ranked_by='self_confidence',)
     assert ranked_label_issues is not None, "`ranked_label_issues` not defined."
-
     # save this to class
     self.issues = ranked_label_issues
     print(f'{len(ranked_label_issues)} label issues found.')
-
     # overwrite label for all the entries in all_df
     for index in self.issues:
       label = self.all_df.loc[index, 'label']
