@@ -11,7 +11,6 @@ from src.consts import DATA_DIR
 class ProductReviewEmbeddings(Dataset):
   r"""RoBERTa embeddings of customer reviews. Embeddings are precomputed 
   and saved to disk. This class does not compute embeddings live.
-
   Argument
   --------
   split (str): the dataset portion
