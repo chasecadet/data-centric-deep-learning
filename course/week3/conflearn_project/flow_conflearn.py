@@ -136,17 +136,18 @@ class TrainIdentifyReview(FlowSpec):
       X_train, y_train = X[train_index], y[train_index]
       X_test, y_test = X[test_index], y[test_index]
       # Convert those bad boys to tensors 
-      X_test_tensor = torch.tensor(X_test)
-      y_test_tensor = torch.tensor(y_test)
-      X_train_tensor = torch.tensor(X_train) 
-      y_train_tensor = torch.tensor(y_train)
+      X_test_tensor = torch.Tensor(X_test)
+      y_test_tensor = torch.Tensor(y_test)
+      X_train_tensor = torch.Tensor(X_train) 
+      y_train_tensor = torch.Tensor(y_train)
+      
       # Create train/test datasets using tensors.
       train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
       test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
       # Split up the datasets 
       train_size = int(len(train_dataset) * 0.8)  # 80% of data for training
       val_size = len(train_dataset) - train_size  # remaining 20% for validation
-      train_dataset, val_dataset = random_split(train_dataset, [train_size, val_size])
+      train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, [train_size, val_size])
       # Create DataLoader instances for training, validation, and testing sets 
       # Set batch size for your data loader
       batch_size = 32
@@ -154,11 +155,11 @@ class TrainIdentifyReview(FlowSpec):
       test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
       val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
       # create SentimentClassifierSystem
-      result = trainer.fit(model, train_dataloader=train_dataloader, val_dataloaders=val_dataloader)
+      trainer.fit(model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
       # Call `predict` on `Trainer` and the test data loader.
-      logits = trainer.predict(test_dataloaders=test_dataloader)
+      logits = trainer.predict(test_dataloader)
       # Convert probabilities back to numpy (make sure 1D).
-      probs = F.softmax(logits, dim=1)
+      probs = torch.nn.functional.softmax(logits, dim=1)
       probs_np = probs.numpy()
       probs = probs_np.flatten()
       assert probs_ is not None, "`probs_` is not defined."
@@ -184,6 +185,7 @@ class TrainIdentifyReview(FlowSpec):
   def inspect(self):
     r"""Use confidence learning over examples to identify labels that 
     likely have issues with the `cleanlab` tool. """
+    all_df=self.all_df
     prob = np.asarray(self.all_df.prob)
     prob = np.stack([1 - prob, prob]).T
     ranked_label_issues = find_label_issues(labels=all_df.label.values,pred_probs=prob,return_indices_ranked_by='self_confidence',)
@@ -267,24 +269,10 @@ class TrainIdentifyReview(FlowSpec):
     dm = ReviewDataModule(self.config)
     train_size = len(dm.train_dataset)
     dev_size = len(dm.dev_dataset)
+    all_df=self.all_df
     dm.train_dataset.data = all_df[:train_size]
     dm.dev_dataset.data = all_df[train_size:train_size+dev_size]
     dm.test_dataset.data = all_df[train_size+dev_size:]
-
-    # ====================================
-    # FILL ME OUT
-    # 
-    # Overwrite the dataframe in each dataset with `all_df`. Make sure to 
-    # select the right indices. Since `all_df` contains the corrected labels,
-    # training on it will incorporate cleanlab's re-annotations.
-    # 
-    # Pseudocode:
-    # --
-    # dm.train_dataset.data = training slice of self.all_df
-    # dm.dev_dataset.data = dev slice of self.all_df
-    # dm.test_dataset.data = test slice of self.all_df
-    # # ====================================
-    # start from scratch
     system = SentimentClassifierSystem(self.config)
     trainer = Trainer(
       max_epochs = self.config.train.optimizer.max_epochs)
