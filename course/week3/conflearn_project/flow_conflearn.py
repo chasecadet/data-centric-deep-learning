@@ -139,8 +139,7 @@ class TrainIdentifyReview(FlowSpec):
       X_test_tensor = torch.Tensor(X_test)
       y_test_tensor = torch.Tensor(y_test)
       X_train_tensor = torch.Tensor(X_train) 
-      y_train_tensor = torch.Tensor(y_train)
-      
+      y_train_tensor = torch.Tensor(y_train)      
       # Create train/test datasets using tensors.
       train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
       test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
@@ -150,21 +149,29 @@ class TrainIdentifyReview(FlowSpec):
       train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, [train_size, val_size])
       # Create DataLoader instances for training, validation, and testing sets 
       # Set batch size for your data loader
-      batch_size = 32
-      train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-      test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
-      val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+      dm = ReviewDataModule(self.config)
+      dm.train_dataset = train_dataset
+      dm.dev_dataset = val_dataset
+      dm.test_dataset = test_dataset    
+      #train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+      #test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+      #val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
       # create SentimentClassifierSystem
-      trainer.fit(model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
+      system = SentimentClassifierSystem(self.config)
+      trainer = Trainer(
+      max_epochs = self.config.train.optimizer.max_epochs)
+      trainer.fit(system, dm)
+      trainer.test(system, dm, ckpt_path = 'best')
+      results = system.test_results
       # Call `predict` on `Trainer` and the test data loader.
-      logits = trainer.predict(test_dataloader)
+      logits = trainer.predict(system,dm.test_dataloader())
       # Convert probabilities back to numpy (make sure 1D).
+      logits = torch.(logits, dim=0)
       probs = torch.nn.functional.softmax(logits, dim=1)
       probs_np = probs.numpy()
       probs = probs_np.flatten()
       assert probs_ is not None, "`probs_` is not defined."
       probs[test_index] = probs_
-
     # create a single dataframe with all input features
     all_df = pd.concat([
       self.dm.train_dataset.data,
