@@ -153,10 +153,6 @@ class TrainIdentifyReview(FlowSpec):
       dm.train_dataset = train_dataset
       dm.dev_dataset = val_dataset
       dm.test_dataset = test_dataset    
-      #train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-      #test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
-      #val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
-      # create SentimentClassifierSystem
       system = SentimentClassifierSystem(self.config)
       trainer = Trainer(
       max_epochs = self.config.train.optimizer.max_epochs)
@@ -165,12 +161,15 @@ class TrainIdentifyReview(FlowSpec):
       results = system.test_results
       # Call `predict` on `Trainer` and the test data loader.
       logits = trainer.predict(system,dm.test_dataloader())
+      logits = torch.cat(logits)
       # Convert probabilities back to numpy (make sure 1D).
-      logits = torch.(logits, dim=0)
-      probs = torch.nn.functional.softmax(logits, dim=1)
-      probs_np = probs.numpy()
-      probs = probs_np.flatten()
+      probs_np = torch.from_numpy(logits.numpy()).float()
+      probs_ = probs_np.flatten()
       assert probs_ is not None, "`probs_` is not defined."
+      print(f"probs shape: {probs.shape}")
+      print(f"probs_np shape: {probs_np.shape}")
+      print(f"probs_ shape: {probs_.shape}")
+      probs[test_index] = np.squeeze(probs_np, axis=1)
       probs[test_index] = probs_
     # create a single dataframe with all input features
     all_df = pd.concat([
@@ -288,7 +287,7 @@ class TrainIdentifyReview(FlowSpec):
     trainer.test(system, dm, ckpt_path = 'best')
     results = system.test_results
 
-    pprint(results)
+    print(results)
 
     log_file = join(Path(__file__).resolve().parent.parent, 
       f'logs', 'post-results.json')
