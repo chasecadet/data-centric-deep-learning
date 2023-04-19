@@ -50,8 +50,15 @@ class MonitoringSystem:
   def calibrate(self, tr_probs, tr_labels, te_probs):
     tr_probs_cal = None
     te_probs_cal = None
-    YOU ARE HERE 
-    
+    # Collect the training probabilities and their corresponding labels.
+    #Sort the probabilities in ascending order.
+    # Apply isotonic regression on the sorted probabilities.
+    # Use the resulting isotonic transformation function to transform the probabilities of new data points.
+
+    sorted_probabilities, sorted_labels = zip(*sorted(zip(tr_probs, tr_labels)))
+    ir = IsotonicRegression()
+    tr_probs_cal = ir.fit_transform(sorted_probabilities, sorted_labels)
+    te_probs_cal = ir.transform(te_probs)
     # ============================
     # FILL ME OUT
     # 
