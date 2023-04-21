@@ -31,26 +31,10 @@ class ProductReviewEmbeddings(Dataset):
 
   def get_vocab(self):
     vocab = defaultdict(lambda: 0)
-    # ===============================
-    # FILL ME OUT
-    # 
-    # Compute a map between word to count: number of times the 
-    # word shows up in the dataset.
-    # 
-    # Pseudocode:
-    # --
-    # loop through `self.data.review`
-    #   split review into tokens
-    #   update vocab with each token
-    # 
-    # Type:
-    # --
-    # vocab: dict[str, int]
-    # 
-    # Notes:
-    # --
-    # Convert tokens to lowercase when updating vocab.
-    # ===============================
+    for review in self.data.review:
+      tokens = review.split()
+      for token in tokens:
+        vocab[token] += 1
     return dict(vocab)
 
   def get_labels(self):
@@ -94,22 +78,10 @@ class ProductReviewStream(Dataset):
   def get_vocab(self):
     # `defaultdict` can be a helpful utility
     vocab = defaultdict(lambda: 0)
-    # ===============================
-    # FILL ME OUT
-    # 
-    # Copy your implementation of `get_vocab` from 
-    # the `ProductReviewEmbeddings` class here.
-    # 
-    # Pseudocode:
-    # --
-    # loop through `self.data.review`
-    #   split review into tokens
-    #   update vocab with each token
-    # 
-    # Type:
-    # --
-    # vocab: dict[str, int]
-    # ===============================
+    for review in self.data.review:
+      tokens = review.split()
+      for token in tokens:
+        vocab[token] += 1
     return dict(vocab)
 
   def __getitem__(self, index):

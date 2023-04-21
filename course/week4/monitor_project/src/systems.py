@@ -172,35 +172,15 @@ class RobustSentimentSystem(SentimentClassifierSystem):
     groups = batch['group']
 
     logits = self.model(embs)
-
+#Since the loss tensor has the same shape as the groups tensor, we can use boolean indexing with the groups tensor to select only the elements of the loss tensor that correspond to each group.
+#Then we can take the mean of the selected elements to get the average loss for each group.
     # compute loss per element (no reduction)
     loss = F.binary_cross_entropy_with_logits(
       logits.squeeze(1), labels.float(), reduction='none')
-
-    # =================================
-    # FILL ME OUT
-    # 
-    # Compute the DRO objective. The variable `loss` above 
-    # is a torch.FloatTensor of the same length as the minibatch.
-    # 
-    # Write code to compute the average loss per group. Then 
-    # compute the maximum over the group averages. Overwrite the 
-    # `loss` variable with this value. This resulting loss is the 
-    # one we will optimize using SGD.
-    # 
-    # Pseudocode:
-    # --
-    # loss0 = mean of terms in `loss` belonging to group 0
-    # loss1 = mean of terms in `loss` belonging to group 1
-    # loss = max(loss0, loss1)
-    # 
-    # Types:
-    # --
-    # loss0: torch.Tensor (length = # of group 0 elements in batch)
-    # loss1: torch.Tensor (length = # of group 1 elements in batch)
-    # loss: torch.Tensor (single element)
-    # =================================
-
+    loss0 = loss[groups == 0].mean()
+    loss1 = loss[groups == 1].mean()
+# compute max loss between the two groups
+    loss = torch.max(loss0, loss1)
     with torch.no_grad():
       # Compute accuracy using the logits and labels
       preds = torch.round(torch.sigmoid(logits))

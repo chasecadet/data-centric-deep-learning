@@ -6,21 +6,18 @@ from sklearn.isotonic import IsotonicRegression
 
 def get_ks_score(tr_probs, te_probs):
   score = None
-  tr_probs = tr_probs.numpy()
-  te_probs = te_probs.numpy()
+  #tr_probs = tr_probs.numpy()
+  #te_probs = te_probs.numpy()
   statistic, score = ks_2samp(te_probs, tr_probs)
   return score
 
 
 def get_hist_score(tr_probs, te_probs, bins=10):
   score = None
-  # Convert tensors to NumPy arrays
-  tr_probs_np = tr_probs.numpy()
-  te_probs_np = te_probs.numpy()
   # Compute the histogram counts for the training set probabilities
-  tr_counts, tr_edges = np.histogram(tr_probs_np, bins=bins)
+  tr_counts, tr_edges = np.histogram(tr_probs, bins=bins)
   # Compute the histogram counts for the test set probabilities
-  te_counts, te_edges = np.histogram(te_probs_np, bins=tr_edges)
+  te_counts, te_edges = np.histogram(te_probs, bins=tr_edges)
   # Normalize the counts to obtain frequencies
   tr_freqs = tr_counts / np.sum(tr_counts)
   te_freqs = te_counts / np.sum(te_counts)
@@ -33,8 +30,10 @@ def get_vocab_outlier(tr_vocab, te_vocab):
   score = None
   num_seen=0
   num_total=len(te_vocab)
-  for key, value in dict1.items():
-    if key in tr_vocab and te_vocab[key] == value:
+  print(len(te_vocab))
+  print(type((te_vocab)))
+  for key, value in tr_vocab.items():
+    if key in te_vocab and tr_vocab[key] == value:
         num_seen += 1
   score = 1 - (num_seen/num_total)
   return score
@@ -59,26 +58,6 @@ class MonitoringSystem:
     ir = IsotonicRegression()
     tr_probs_cal = ir.fit_transform(sorted_probabilities, sorted_labels)
     te_probs_cal = ir.transform(te_probs)
-    # ============================
-    # FILL ME OUT
-    # 
-    # Calibrate probabilities with isotonic regression using 
-    # the training probabilities and labels. 
-    # 
-    # Pseudocode:
-    # --
-    # use IsotonicRegression(out_of_bounds='clip')
-    #   See documentation for `out_of_bounds` description.
-    # tr_probs_cal = fit calibration model
-    # te_probs_cal = evaluate using fitted model
-    # 
-    # Type:
-    # --
-    # `tr_probs_cal`: torch.Tensor. Note that sklearn
-    # returns a NumPy array. You will need to cast 
-    # it to a torch.Tensor.
-    # 
-    # `te_probs_cal`: torch.Tensor
     # ============================
     return tr_probs_cal, te_probs_cal
 

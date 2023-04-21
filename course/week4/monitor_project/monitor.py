@@ -11,7 +11,7 @@ from src.paths import LOG_DIR
 
 def main(args):
   rs = np.random.RandomState(42)
-  system = SentimentClassifierSystem.load_from_checkpoint(args.ckpt)
+  system = SentimentClassifierSystem.load_from_checkpoint(args.ckpt) # this is the only thing loaded from CP
   tr_ds = ProductReviewEmbeddings(lang=system.config.system.data.lang, split='train')
   tr_dl = DataLoader(tr_ds, batch_size=128, shuffle=False, num_workers=4)
   tr_vocab = tr_ds.get_vocab()
@@ -22,9 +22,14 @@ def main(args):
   # we don't want to use all the training set as it much larger than
   # our stream datasets. We randomly pick 1,000.
   tr_probs, tr_labels = create_sample(tr_probs, tr_labels, 1000, rs)
-
+  print("stuff we gonna pass to our MonitoringSystem")
+  print("stuff being passed to our beloved monitoring system")
+  print("tr_probs length:", len(tr_probs))
+  print("tr_probs labels:", len(tr_labels))
+  print("tr_vocab length:", len(tr_vocab))
   # initialize the `MonitoringSystem` using the vocabulary
   # and predicted probabilities.
+  print("entering our monitoring system baby")
   monitor = MonitoringSystem(tr_vocab, tr_probs, tr_labels)
 
   for index in range(1, 9):
@@ -43,6 +48,8 @@ def main(args):
     #   ks_score: p-value from two-sample KS test
     #   hist_score: intersection score between histograms
     #   outlier_score: perc of vocabulary that is new
+    print("te_vocab length:", len(te_vocab))
+    print("at the results part homeslices!")
     results = monitor.monitor(te_vocab, te_probs)
 
     if results is not None:
@@ -58,6 +65,8 @@ def main(args):
 def get_probs(system, loader):
   trainer = Trainer(logger = TensorBoardLogger(save_dir=LOG_DIR))
   probs = trainer.predict(system, dataloaders=loader)
+  print("Getting probs")
+
   return torch.cat(probs, dim=0).squeeze(1)
 
 
@@ -66,6 +75,8 @@ def create_sample(probs, labels, size, rs):
   indices = rs.choice(indices, size=size, replace=False)
   probs = probs[indices]
   labels = labels[indices]
+  print("creating a sample ")
+
   return probs, labels
 
 
